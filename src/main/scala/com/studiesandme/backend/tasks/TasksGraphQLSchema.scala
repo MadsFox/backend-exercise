@@ -14,6 +14,7 @@ trait TasksGraphQLSchema extends BaseGraphQLSchema with SpecialExecutionTactics 
     fields[Unit, Task](
       Field("id", TaskIdType, resolve          = _.value.id),
       Field("description", StringType, resolve = _.value.description),
+      Field("status", StringType, resolve      = _.value.status),
       Field(
         "createdAt",
         LongType,
@@ -32,6 +33,10 @@ trait TasksGraphQLSchema extends BaseGraphQLSchema with SpecialExecutionTactics 
   val TaskIdArg = Argument("id", TaskIdType)
   val CreateTaskInputArg =
     Argument("input", CreateTaskInputType)
+
+  implicit val MarkTaskCompletedInputType: InputObjectType[TaskId] =
+    deriveInputObjectType[TaskId]()
+
 
   object TaskQueries {
     def tasks(): Field[GraphQLService, Unit] = Field(
@@ -52,6 +57,14 @@ trait TasksGraphQLSchema extends BaseGraphQLSchema with SpecialExecutionTactics 
       description = Some("Create new task"),
       arguments   = CreateTaskInputArg :: Nil,
       resolve     = c => c.ctx.createTask(c.arg(CreateTaskInputArg)),
+    )
+
+    def markTaskCompleted(): Field[GraphQLService, Unit] = Field(
+      "markTaskCompleted",
+      TaskType,
+      description = Some("Mark existing task completed"),
+      arguments   = TaskIdArg :: Nil,
+      resolve     = c => c.ctx.markTaskCompleted(c.arg(TaskIdArg)),
     )
   }
 }

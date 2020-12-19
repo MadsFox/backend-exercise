@@ -1,6 +1,6 @@
 package com.studiesandme.backend
 
-import com.studiesandme.backend.common.Graphient.{GraphqlCall, Query}
+import com.studiesandme.backend.common.Graphient.{GraphqlCall, Mutation, Query}
 import com.studiesandme.backend.common.{QueryGenerator, StandardSpec, UnitTestSupport}
 import com.studiesandme.backend.tasks._
 import sangria.schema.Schema
@@ -9,6 +9,8 @@ import sangria.ast.Document
 import org.mockito.Mockito._
 import spray.json._
 
+import java.time.Instant
+import java.util.UUID
 import scala.concurrent.Future
 
 class GraphQlSpec extends StandardSpec with DefaultJsonProtocol with UnitTestSupport with TasksGraphQLSchema {
@@ -34,7 +36,31 @@ class GraphQlSpec extends StandardSpec with DefaultJsonProtocol with UnitTestSup
     verify(service).listTasks()
   }
 
+  it must "handle 'markTaskCompleted query" in {
+    val taskId: TaskId = TaskId.generate
+    val task: Task =
+      Task(
+        id = taskId,
+        "test task",
+        "completed",
+        Instant.now(),
+        Instant.now())
+    when(service.markTaskCompleted(taskId))
+      .thenReturn(Future.successful(task))
+    val query = generateQuery(Mutation(TaskMutations.markTaskCompleted()))
+
+    val variables = Option(JsObject("id" -> taskId.toJson))
+
+    val result = graphQl.executeGraphQlQuery(query, None, variables).futureValue
+
+    result._2.asJsObject.getFields("description", "status", "id") shouldBe
+      QueryResponseDTO(Some(JsObject("markTaskCompleted" -> task.toJson)), None).toJson.asJsObject.getFields("description", "status", "id")
+    verify(service).markTaskCompleted(taskId)
+  }
+
   private def generateQuery[Ctx, T](query: GraphqlCall[Ctx, T]): Document = {
-    new QueryGenerator(schema).generateQuery(query).right.get
+    val generatedQuery = new QueryGenerator(schema).generateQuery(query)
+    println(generatedQuery)
+    generatedQuery.right.get
   }
 }

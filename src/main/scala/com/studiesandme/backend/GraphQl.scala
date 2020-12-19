@@ -35,6 +35,7 @@ object SchemaDefinition extends SpecialExecutionTactics with TasksGraphQLSchema 
     "Mutation",
     fields[GraphQLService, Unit](
       TaskMutations.createTask(),
+      TaskMutations.markTaskCompleted(),
     ),
   )
 }

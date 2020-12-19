@@ -30,6 +30,7 @@ package tasks {
   final case class Task(
       id:          TaskId,
       description: String,
+      status:      String,
       createdAt:   Instant,
       modifiedAt:  Instant,
   )
@@ -37,12 +38,13 @@ package tasks {
     def tupled = (Task.apply _).tupled
 
     implicit val taskFormat: RootJsonFormat[Task] =
-      jsonFormat4(Task.apply)
+      jsonFormat5(Task.apply)
 
     def fromInput(input: CreateTaskInput): Task = {
       Task(
         id          = TaskId.generate,
         description = input.description,
+        status      = "pending",
         createdAt   = Instant.now(),
         modifiedAt  = Instant.now(),
       )

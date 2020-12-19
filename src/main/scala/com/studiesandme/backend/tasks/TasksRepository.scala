@@ -24,11 +24,12 @@ trait TasksTable extends StudiesAndMeMappers with NewtypeSlick {
   class TasksTable(tag: Tag) extends Table[Task](tag, "tasks") {
     val id          = column[TaskId]("id", O.PrimaryKey)
     val description = column[String]("description")
+    val status      = column[String]("status")
     val createdAt   = column[Instant]("createdAt")
     val modified    = column[Instant]("modified")
 
     def * =
-      (id, description, createdAt, modified)
+      (id, description, status, createdAt, modified)
         .mapTo[Task]
   }
 
