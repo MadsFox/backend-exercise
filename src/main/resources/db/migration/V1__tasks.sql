@@ -13,3 +13,6 @@ INSERT INTO tasks (id, description) VALUES
 
 ALTER TABLE tasks
 ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'pending';
+
+ALTER TABLE tasks
+ADD CONSTRAINT status_enum CHECK (status ='pending' OR status='completed');
