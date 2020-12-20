@@ -9,6 +9,8 @@ import spray.json.RootJsonFormat
 
 package tasks {
 
+  import com.studiesandme.backend.common.NewtypeSpray.deriveRootJsonFormat
+
   import java.time.Instant
 
   final case class TaskId(value: UUID) extends Newtype[UUID] {
@@ -17,6 +19,12 @@ package tasks {
   object TaskId {
     implicit val taskIdFormat = deriveJsonFormat(TaskId.apply)
     def generate: TaskId = TaskId(UUID.randomUUID())
+  }
+
+  final case class TaskStatus(value: String) extends Newtype[String] {
+    //Know that there is a Enum in Scala, but haven't had great success with their implementation
+    require(value == "completed" || value == "pending", "TaskStatus must have value 'completed' or 'pending'")
+    override def toString: String = value
   }
 
   final case class CreateTaskInput(
@@ -30,7 +38,7 @@ package tasks {
   final case class Task(
       id:          TaskId,
       description: String,
-      status:      String,
+      status:      TaskStatus,
       createdAt:   Instant,
       modifiedAt:  Instant,
   )
@@ -44,7 +52,7 @@ package tasks {
       Task(
         id          = TaskId.generate,
         description = input.description,
-        status      = "pending",
+        status      = TaskStatus("pending"),
         createdAt   = Instant.now(),
         modifiedAt  = Instant.now(),
       )

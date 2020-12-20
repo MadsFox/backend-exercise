@@ -1,9 +1,8 @@
 package com.studiesandme.backend
 
 import java.util.UUID
-
 import com.studiesandme.backend.common.Newtype
-import com.studiesandme.backend.tasks.TaskId
+import com.studiesandme.backend.tasks.{TaskId, TaskStatus}
 import sangria.schema.{Argument, ScalarAlias, ScalarType, StringType}
 import sangria.validation.ValueCoercionViolation
 
@@ -75,6 +74,8 @@ trait BaseGraphQLSchema {
     case object UUIDCoercionViolation extends ValueCoercionViolation("String value expected")
 
     implicit val TaskIdType = scalarAliasFor(TaskId.apply)
+
+    implicit val TaskStatusType = scalarAliasFor(TaskStatus.apply)
 
     implicit val TaskIdTypeArg = Argument("taskId", TaskIdType)
   }

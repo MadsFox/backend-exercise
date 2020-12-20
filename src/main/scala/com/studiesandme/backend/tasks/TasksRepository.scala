@@ -14,18 +14,19 @@ import scala.concurrent.Future
 trait TasksRepository { this: DBComponent =>
   def create(contact: Task): Future[Task]
   def list(): Future[List[Task]]
-  def markTaskCompleted(taskId: TaskId): Future[Task]
+  def updateTaskStatus(taskId: TaskId, status: TaskStatus): Future[Task]
 }
 
 trait TasksTable extends StudiesAndMeMappers with NewtypeSlick {
   this: DBComponent =>
 
   implicit lazy val taskIdColumnType = deriveUUIDAsStringColumn(TaskId.apply)
+  implicit lazy val taskStatusColumnType = deriveStringColumn(TaskStatus.apply)
 
   class TasksTable(tag: Tag) extends Table[Task](tag, "tasks") {
     val id          = column[TaskId]("id", O.PrimaryKey)
     val description = column[String]("description")
-    val status      = column[String]("status")
+    val status      = column[TaskStatus]("status")
     val createdAt   = column[Instant]("createdAt")
     val modified    = column[Instant]("modified")
 
@@ -69,11 +70,11 @@ class TasksRepositoryImpl @Inject() (val driver: JdbcProfile)(val dbEnv: DBEnv)
         case result @ _ => result.toList
       }
 
-  override def markTaskCompleted(taskId: TaskId): Future[Task] = {
+  override def updateTaskStatus(taskId: TaskId, status: TaskStatus): Future[Task] = {
     val query = for {
       t <- allTasks.filter(_.id === taskId)
     } yield t.status
-    val action = query.update("completed")
+    val action = query.update(status)
     dbEnv.db.run{
       action
     }.flatMap { _ =>

@@ -14,7 +14,7 @@ trait TasksGraphQLSchema extends BaseGraphQLSchema with SpecialExecutionTactics 
     fields[Unit, Task](
       Field("id", TaskIdType, resolve          = _.value.id),
       Field("description", StringType, resolve = _.value.description),
-      Field("status", StringType, resolve      = _.value.status),
+      Field("status", TaskStatusType, resolve  = _.value.status),
       Field(
         "createdAt",
         LongType,
