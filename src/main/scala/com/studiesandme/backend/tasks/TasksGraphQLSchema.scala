@@ -1,10 +1,10 @@
 package com.studiesandme.backend.tasks
 
 import com.studiesandme.backend.common.SpecialExecutionTactics
-import sangria.macros.derive.deriveInputObjectType
+import sangria.macros.derive.{GraphQLInputTypeLookup, deriveInputObjectType}
 import com.studiesandme.backend.{BaseGraphQLSchema, GraphQLService}
 import sangria.marshalling.sprayJson._
-import sangria.schema.{fields, Argument, Field, InputObjectType, ListType, LongType, ObjectType, StringType}
+import sangria.schema.{Argument, Field, InputObjectType, ListType, LongType, ObjectType, StringType, fields}
 
 trait TasksGraphQLSchema extends BaseGraphQLSchema with SpecialExecutionTactics {
   import ScalarHelpers._
@@ -34,8 +34,10 @@ trait TasksGraphQLSchema extends BaseGraphQLSchema with SpecialExecutionTactics 
   val CreateTaskInputArg =
     Argument("input", CreateTaskInputType)
 
-  implicit val MarkTaskCompletedInputType: InputObjectType[TaskId] =
-    deriveInputObjectType[TaskId]()
+  implicit val UpdateTaskDescriptionInputType: InputObjectType[UpdateTaskDescriptionInput] =
+    deriveInputObjectType[UpdateTaskDescriptionInput]()
+  val UpdateTaskDescriptionInputArg =
+    Argument("updateTaskDescriptionInput", UpdateTaskDescriptionInputType)
 
 
   object TaskQueries {
@@ -65,6 +67,14 @@ trait TasksGraphQLSchema extends BaseGraphQLSchema with SpecialExecutionTactics 
       description = Some("Mark existing task completed"),
       arguments   = TaskIdArg :: Nil,
       resolve     = c => c.ctx.markTaskCompleted(c.arg(TaskIdArg)),
+    )
+
+    def updateTaskDescription(): Field[GraphQLService, Unit] = Field(
+      "updateTaskDescription",
+      TaskType,
+      description = Some("Mark existing task completed"),
+      arguments   = UpdateTaskDescriptionInputArg :: Nil,
+      resolve     = c => c.ctx.updateTaskDescription(c.arg(UpdateTaskDescriptionInputArg)),
     )
   }
 }

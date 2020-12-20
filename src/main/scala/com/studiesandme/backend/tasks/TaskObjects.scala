@@ -35,6 +35,17 @@ package tasks {
       jsonFormat1(CreateTaskInput.apply)
   }
 
+  final case class UpdateTaskDescriptionInput(
+      id: TaskId,
+      description: String
+  )
+  object UpdateTaskDescriptionInput extends StudiesAndMeJsonFormatters {
+    def tupled = (UpdateTaskDescriptionInput.apply _).tupled
+    implicit val updateTaskDescriptionInputFormat: RootJsonFormat[UpdateTaskDescriptionInput] =
+      jsonFormat2(UpdateTaskDescriptionInput.apply)
+  }
+
+
   final case class Task(
       id:          TaskId,
       description: String,

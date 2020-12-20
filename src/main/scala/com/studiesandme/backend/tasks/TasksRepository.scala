@@ -15,6 +15,7 @@ trait TasksRepository { this: DBComponent =>
   def create(contact: Task): Future[Task]
   def list(): Future[List[Task]]
   def updateTaskStatus(taskId: TaskId, status: TaskStatus): Future[Task]
+  def updateTaskDescription(contact: UpdateTaskDescriptionInput): Future[Task]
 }
 
 trait TasksTable extends StudiesAndMeMappers with NewtypeSlick {
@@ -80,6 +81,19 @@ class TasksRepositoryImpl @Inject() (val driver: JdbcProfile)(val dbEnv: DBEnv)
     }.flatMap { _ =>
       dbEnv.db.run{
       allTasks.filter(_.id === taskId).result.head}
+    }
+  }
+
+  override def updateTaskDescription(input: UpdateTaskDescriptionInput): Future[Task] = {
+    val query = for {
+      t <- allTasks.filter(_.id === input.id)
+    } yield t.description
+    dbEnv.db.run {
+      query.update(input.description)
+    }.flatMap { _ =>
+      dbEnv.db.run{
+        allTasks.filter(_.id === input.id).result.head
+      }
     }
   }
 

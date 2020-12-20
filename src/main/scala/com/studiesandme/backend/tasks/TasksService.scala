@@ -12,6 +12,7 @@ trait TasksService {
   def create(contact: CreateTaskInput): Future[Task]
   def list(): Future[List[Task]]
   def markTaskCompleted(taskId: TaskId): Future[Task]
+  def updateTaskDescription(update: UpdateTaskDescriptionInput): Future[Task]
 }
 
 class TasksServiceImpl @Inject() (
@@ -35,4 +36,8 @@ class TasksServiceImpl @Inject() (
 
   override def markTaskCompleted(taskId: TaskId): Future[Task] =
     tasksRepository.updateTaskStatus(taskId, TaskStatus("completed"))
+
+  override def updateTaskDescription(input: UpdateTaskDescriptionInput): Future[Task] = {
+    tasksRepository.updateTaskDescription(input)
+  }
 }

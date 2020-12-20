@@ -42,7 +42,7 @@ class GraphQlSpec extends StandardSpec with DefaultJsonProtocol with UnitTestSup
       Task(
         id = taskId,
         "test task",
-        "completed",
+        TaskStatus("completed"),
         Instant.now(),
         Instant.now())
     when(service.markTaskCompleted(taskId))
@@ -58,9 +58,39 @@ class GraphQlSpec extends StandardSpec with DefaultJsonProtocol with UnitTestSup
     verify(service).markTaskCompleted(taskId)
   }
 
+  it must "handle 'updateTaskDescription query" in {
+    val taskId: TaskId = TaskId.generate
+    val updateTaskDescriptionInput: UpdateTaskDescriptionInput =
+      UpdateTaskDescriptionInput(
+        id = taskId,
+        "test task")
+    val task: Task =
+      Task(
+        updateTaskDescriptionInput.id,
+        updateTaskDescriptionInput.description,
+        TaskStatus("pending"),
+        Instant.now(),
+        Instant.now()
+      )
+    when(service.updateTaskDescription(updateTaskDescriptionInput))
+      .thenReturn(Future.successful(task))
+    val query = generateQuery(Mutation(TaskMutations.updateTaskDescription()))
+
+    val variables = Option(
+      JsObject("updateTaskDescriptionInput" ->
+        JsObject("id" -> updateTaskDescriptionInput.id.toJson, "description" -> updateTaskDescriptionInput.description.toJson)))
+
+    val result = graphQl.executeGraphQlQuery(query, None, variables).futureValue
+
+    result._2.asJsObject.getFields("description", "status", "id") shouldBe
+      QueryResponseDTO(Some(JsObject("updateTaskDescription" -> updateTaskDescriptionInput.toJson)), None).toJson.asJsObject.getFields("description", "status", "id")
+    verify(service).updateTaskDescription(updateTaskDescriptionInput)
+  }
+
   private def generateQuery[Ctx, T](query: GraphqlCall[Ctx, T]): Document = {
+    println(s"query: $query")
     val generatedQuery = new QueryGenerator(schema).generateQuery(query)
-    println(generatedQuery)
+    println(s"generatedQuery: $generatedQuery")
     generatedQuery.right.get
   }
 }
