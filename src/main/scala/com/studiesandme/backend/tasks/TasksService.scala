@@ -34,5 +34,5 @@ class TasksServiceImpl @Inject() (
   }
 
   override def markTaskCompleted(taskId: TaskId): Future[Task] =
-    ???
+    tasksRepository.markTaskCompleted(taskId)
 }
