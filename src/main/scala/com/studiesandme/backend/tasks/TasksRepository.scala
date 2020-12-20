@@ -14,6 +14,7 @@ import scala.concurrent.Future
 trait TasksRepository { this: DBComponent =>
   def create(contact: Task): Future[Task]
   def list(): Future[List[Task]]
+  def markTaskCompleted(taskId: TaskId): Future[Task]
 }
 
 trait TasksTable extends StudiesAndMeMappers with NewtypeSlick {
@@ -68,6 +69,20 @@ class TasksRepositoryImpl @Inject() (val driver: JdbcProfile)(val dbEnv: DBEnv)
         case result @ _ => result.toList
       }
 
+  override def markTaskCompleted(taskId: TaskId): Future[Task] = {
+    val query = for {
+      t <- allTasks.filter(_.id === taskId)
+    } yield t.status
+    val action = query.update("completed")
+    dbEnv.db.run{
+      action
+    }.flatMap { _ =>
+      dbEnv.db.run{
+      allTasks.filter(_.id === taskId).result.head}
+    }
+  }
+
   override def isHealthy: Future[Health] =
-    isHealthy(dbEnv, "Business Contacts repo")
+  isHealthy(dbEnv, "Business Contacts repo")
+
 }
