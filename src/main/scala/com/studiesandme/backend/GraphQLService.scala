@@ -30,5 +30,5 @@ class GraphQLServiceImpl @Inject() (
     tasksService.list()
   }
 
-  override def markTaskCompleted(input: TaskId): Future[Task] = ???
+  override def markTaskCompleted(input: TaskId): Future[Task] = tasksService.markTaskCompleted(input)
 }

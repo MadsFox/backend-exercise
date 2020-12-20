@@ -11,6 +11,7 @@ import scala.concurrent.Future
 trait TasksService {
   def create(contact: CreateTaskInput): Future[Task]
   def list(): Future[List[Task]]
+  def markTaskCompleted(taskId: TaskId): Future[Task]
 }
 
 class TasksServiceImpl @Inject() (
@@ -31,4 +32,7 @@ class TasksServiceImpl @Inject() (
   override def list(): Future[List[Task]] = {
     tasksRepository.list()
   }
+
+  override def markTaskCompleted(taskId: TaskId): Future[Task] =
+    ???
 }
